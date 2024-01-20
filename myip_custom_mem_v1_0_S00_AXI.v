@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module myip_custom_mem_v1_0_S00_AXI #
+	module myip_buffer_v1_0_S00_AXI #
 	(
 		// Users to add parameters here
 
@@ -15,7 +15,7 @@
 	)
 	(
 		// Users to add ports here
-
+        input  wire [31:0] DATA,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -79,11 +79,7 @@
 		// Read ready. This signal indicates that the master can
     		// accept the read data and response information.
 		input wire  S_AXI_RREADY,
-		input wire [15:0] pl_addr_logic,
-		input wire pl_en,
-		input wire pl_wr_en,
-		output wire done,
-		output reg [31:0] pl_dout
+		output wire ar_valid_user
 	);
 
 	// AXI4LITE signals
@@ -375,10 +371,10 @@
 	begin
 	      // Address decoding for reading registers
 	      case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
-	        2'h0   : reg_data_out <= slv_reg0;
+	        2'h0   : reg_data_out <= DATA;
 	        2'h1   : reg_data_out <= slv_reg1;
 	        2'h2   : reg_data_out <= slv_reg2;
-	        2'h3   : reg_data_out <= pl_dout;
+	        2'h3   : reg_data_out <= slv_reg3;
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -401,38 +397,9 @@
 	        end   
 	    end
 	end    
+
 	// Add user logic here
-    (*ram_style="ultra"*)reg [31:0] memory [0:65536];
-    wire [15:0]addr_in; //slave_reg_1[15:0]
-    wire en_in; // slave_reg_0[0]
-    wire wr_en_in; // slave_reg_0[2]
-    
-    
-    integer i;
-    initial begin
-        for (i=0;i<65536;i=i+1)
-            memory[i] = 'd0;
-    end
-    
-    assign addr_in = done ? pl_addr_logic : slv_reg1[15:0];
-    assign en_in = done ? pl_en : slv_reg0[0];
-    assign wr_en_in = done ? pl_wr_en : slv_reg0[2];
-    assign done = slv_reg0[4];// slave_reg_0[4]
-    /*
-    done is given from PS indicating that all the data is written by PS into the custom memory.
-    */
-    
-    always @(posedge S_AXI_ACLK) begin
-        if(en_in) begin
-            if(wr_en_in) begin
-                memory[addr_in]<=slv_reg2;
-            end
-            else begin
-                pl_dout <= memory[addr_in];
-            end
-        end
-    end
-    
+	assign ar_valid_user = S_AXI_ARVALID;
 	// User logic ends
 
 	endmodule
