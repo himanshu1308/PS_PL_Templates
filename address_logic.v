@@ -23,6 +23,7 @@
 module address_logic(
     input clk, 
     input done,
+    input ar_valid,
     output reg [15:0]pl_addr_logic,
     output reg pl_en,
     output reg pl_wr_en
@@ -38,7 +39,7 @@ module address_logic(
     end
     
     always @(posedge clk) begin
-        if(done) begin
+        if(done & ar_valid) begin
             pl_en <= 1'b1;       
             if(pl_addr_logic == 'd65535)
                 pl_addr_logic <= 0;
