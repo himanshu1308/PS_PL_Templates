@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module myip_custom_mem_v1_0 #
+	module myip_buffer_v1_0 #
 	(
 		// Users to add parameters here
 
@@ -15,7 +15,8 @@
 	)
 	(
 		// Users to add ports here
-
+        input  wire [31:0] DATA,
+        output wire ar_valid_user,
 		// User ports ends
 		// Do not modify the ports beyond this line
 
@@ -41,18 +42,13 @@
 		output wire [C_S00_AXI_DATA_WIDTH-1 : 0] s00_axi_rdata,
 		output wire [1 : 0] s00_axi_rresp,
 		output wire  s00_axi_rvalid,
-		input wire  s00_axi_rready,
-		input wire [15:0] pl_addr_logic,
-		input wire pl_en,
-		input wire pl_wr_en,
-		output wire done,
-		output wire [31:0] pl_dout
+		input wire  s00_axi_rready
 	);
 // Instantiation of Axi Bus Interface S00_AXI
-	myip_custom_mem_v1_0_S00_AXI # ( 
+	myip_buffer_v1_0_S00_AXI # ( 
 		.C_S_AXI_DATA_WIDTH(C_S00_AXI_DATA_WIDTH),
 		.C_S_AXI_ADDR_WIDTH(C_S00_AXI_ADDR_WIDTH)
-	) myip_custom_mem_v1_0_S00_AXI_inst (
+	) myip_buffer_v1_0_S00_AXI_inst (
 		.S_AXI_ACLK(s00_axi_aclk),
 		.S_AXI_ARESETN(s00_axi_aresetn),
 		.S_AXI_AWADDR(s00_axi_awaddr),
@@ -74,11 +70,8 @@
 		.S_AXI_RRESP(s00_axi_rresp),
 		.S_AXI_RVALID(s00_axi_rvalid),
 		.S_AXI_RREADY(s00_axi_rready),
-		.pl_addr_logic(pl_addr_logic),
-		.pl_en(pl_en),
-		.pl_wr_en(pl_wr_en),
-		.done(done),
-		.pl_dout(pl_dout)
+		.DATA(DATA),
+		.ar_valid_user(ar_valid_user)
 	);
 
 	// Add user logic here
